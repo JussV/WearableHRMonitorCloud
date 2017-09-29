@@ -23,6 +23,17 @@ function respondWithResult(res, statusCode) {
   };
 }
 
+function respondWithBulkResult(res, statusCode) {
+  statusCode = statusCode || 200;
+  return function(entities) {
+    if(entities !== null) {
+      var responseObj = { length: entities.length, array: entities };
+      return res.status(statusCode).json(responseObj);
+    }
+    return null;
+  };
+}
+
 function patchUpdates(patches) {
   return function(entity) {
     try {
@@ -89,14 +100,15 @@ export function create(req, res) {
 
 // Bulk insert of Heart-rates in the DB
 export function bulkCreate(req, res) {
-  return Heartrate.insertMany(req.body)
-    .then(respondWithResult(res, 201))
+  return Heartrate.insertMany(req.body.heartrates)
+    .then(respondWithBulkResult(res))
     .catch(handleError(res));
 }
 
 // Get date of latest synced heart rate by uniquePhoneId
 export function latestSyncDate(req, res) {
   return Heartrate.findOne({ uniquePhoneId: req.query.upid }, {}, { sort: {date: -1} })
+    .then(handleEntityNotFound(res))
     .then(respondWithResult(res, 201))
     .catch(handleError(res));
 }
