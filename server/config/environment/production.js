@@ -19,6 +19,6 @@ module.exports = {
     uri: process.env.MONGODB_URI
       || process.env.MONGOHQ_URL
       || process.env.OPENSHIFT_MONGODB_DB_URL + process.env.OPENSHIFT_APP_NAME
-      || 'mongodb://localhost/wearablehrmonitorcloud'
+      || 'mongodb://Admin:Tphalo8c@ds011472.mlab.com:11472/wearable-sensor-data'
   }
 };
