@@ -107,7 +107,7 @@ export function bulkCreate(req, res) {
 
 // Get date of latest synced heart rate by uniquePhoneId
 export function latestSyncDate(req, res) {
-  return Heartrate.findOne({ uniquePhoneId: req.query.upid }, {}, { sort: {date: -1} })
+  return Heartrate.findOne({ uniquePhoneId: req.query.upid, device: req.query.device }, {}, { sort: {date: -1} })
     .then(handleEntityNotFound(res))
     .then(respondWithResult(res, 201))
     .catch(handleError(res));
