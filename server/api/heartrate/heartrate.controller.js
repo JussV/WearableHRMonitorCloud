@@ -105,11 +105,11 @@ export function create(req, res) {
 }
 
 // Show heartrates by device id
-export function heartRatesByDeviceByStartDateByEndDateByUniquePhoneId(req, res) {
+export function heartRatesByStartDateByEndDateByUniquePhoneId(req, res) {
   var start = new Date(Number(req.query.startDate));
   var end = new Date(Number(req.query.endDate));
-  var resultArr = [];
-  Heartrate.find({}, 'date value').where({device: req.params.device, uniquePhoneId: req.query.uniquePhoneId, $and: [{date: {$gte: start}}, {date: {$lte: end}}]})
+ /* var resultArr = [];*/
+ /* Heartrate.find({}, 'date value').where({ uniquePhoneId: req.query.uniquePhoneId, $and: [{date: {$gte: start}}, {date: {$lte: end}}]})
     .exec(function(err, result) {
       if(err) {
         return console.log(err);
@@ -130,7 +130,45 @@ export function heartRatesByDeviceByStartDateByEndDateByUniquePhoneId(req, res) 
           return respondWithResult(res, 201);
         }
       });
-    });
+    });*/
+
+  Heartrate.aggregate([
+    { $match: {
+      uniquePhoneId: req.query.uniquePhoneId,
+      $and: [{date: {$gte: start}}, {date: {$lte: end}}]}
+    },
+    /*{
+      $lookup: {
+        from: 'devices',
+        localField: 'device',
+        foreignField: 'key',
+        as: 'device'
+      }
+    },*/
+    { $project: { _id: 1, date: 1, value: 1, device: 1, index: { $const: [0, 1] }, dateToMilliSec: { $subtract: ['$date', new Date('1970-01-01T00:00:00.000Z')] } } },
+    { $unwind: '$index' },
+    { $group: {
+      _id: { device: '$device', id: '$_id' },
+      data: {
+        $push: { $cond: [{$eq: ['$index', 0]}, '$dateToMilliSec', '$value'] }
+      },
+    }},
+    { $sort: { _id: 1 } },
+    { $group: {
+      _id: '$_id.device',
+      data: { $push: '$data' },
+      count: { $sum: 1 }
+    }}
+  ], function(err, resultArr) {
+    if(err) {
+      console.log('A file failed to process');
+      return handleError(res, 500);
+    } else {
+      console.log('All files have been processed successfully');
+      res.jsonp(resultArr)
+      return respondWithResult(res, 201);
+    }
+  });
 }
 
 

@@ -20,7 +20,7 @@ export class HeartrateComponent {
   constructor($http, $filter, $q, $scope) {
     $scope.afterSetExtremes = function(e) {
       var chart = Highcharts.charts[0];
-      chart.showLoading('Loading data from server...');
+     // chart.showLoading('Loading data from server...');
     }
     this.$http = $http;
     this.message = 'Hello';
@@ -40,8 +40,14 @@ export class HeartrateComponent {
         },
 
         yAxis: {
-          floor: 0,
-          ceiling: 100,
+          labels: {
+            format: '{value}'
+          },
+          lineWidth: 3,
+          opposite: false
+         /* floor: 0,
+          ceiling: 180,
+          allowDecimals: false*!/
          /* maxPadding: 0.1,
           startOnTick: false,
           endOnTick: true*/
@@ -51,18 +57,26 @@ export class HeartrateComponent {
           events: {
             afterSetExtremes: $scope.afterSetExtremes
           },
-          minRange: 3600 * 1000 // one hour
+          minRange: 1800 * 1000, // half an hour
         },
 
         plotOptions: {
           series: {
-            compare: 'percent',
-            showInNavigator: true
+            showInNavigator: true,
           }
         },
 
+        colors: ['#f45b5b', '#7cb5ec', '#2b908f', '#7cb5ec', '#ECBF00', '#26645D', '#AA3939', '#90ed7d', '#F7DD00' ],
+
         scrollbar: {
           liveRedraw: false
+        },
+
+        tooltip: {
+          pointFormat: '<span style="color:{point.color}">●<strong>{point.y:.2f} bpm</strong> '
+       /*   pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.change}%)<br/>',
+          valueDecimals: 2,
+          split: true*/
         },
 
         series: res
@@ -85,9 +99,9 @@ export class HeartrateComponent {
     var today = new Date();
     var todayToMiliSec = $filter('inMilliseconds')(today);
     var beforeOneWeek = new Date();
-    beforeOneWeek.setDate(beforeOneWeek.getDate() - 7);
+    beforeOneWeek.setDate(beforeOneWeek.getDate() - 5);
     var beforeOneWeekToMiliSec = $filter('inMilliseconds')(beforeOneWeek);
-    angular.forEach(names, function(name, i) {
+    /*angular.forEach(names, function(name, i) {
       promises.push(
         $http({
           method: 'JSONP',
@@ -101,6 +115,20 @@ export class HeartrateComponent {
           })
       );
     });
+    $q.all(promises).then(lastTask);
+    return defer.promise;*/
+    promises.push(
+    $http({
+      method: 'JSONP',
+      url: 'http://localhost:3000/api/heartrates/show/chart?startDate=' + beforeOneWeekToMiliSec + '&endDate=' + todayToMiliSec + '&uniquePhoneId=' + uniquePhoneId })
+      .then(function(res) {
+        angular.forEach(res.data, function(obj, i) {
+          seriesOptions[i] = {
+            name: obj._id,
+            data: obj.data,
+          };
+        });
+      }));
     $q.all(promises).then(lastTask);
     return defer.promise;
   }
@@ -123,9 +151,9 @@ export default angular.module('wearableHrmonitorCloudApp.heartrate', [uiRouter])
       },
       link: function(scope, element) {
         scope.$watch('options', function(newValue) {
-          if(newValue != undefined && newValue.series !== null) {
+          if(newValue != undefined && newValue.series !== null && newValue.series.length > 0) {
             var chart = Highcharts.stockChart(element[0], scope.options);
-            chart.series[0].setData(newValue, true);
+            chart.series.setData(newValue, true);
           }
         }, true);
       }
