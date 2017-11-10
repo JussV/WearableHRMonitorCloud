@@ -11,6 +11,7 @@ export function routeConfig($urlRouterProvider, $locationProvider, $sceDelegateP
     // Allow same origin resource loads.
     'self',
     // Allow loading from our assets domain.  Notice the difference between * and **.
-    'https://www.highcharts.com/samples/data/jsonp.php**'
+    'https://www.highcharts.com/samples/data/jsonp.php**',
+    'https://www.highcharts.com/samples/data/from-sql.php**'
   ]);
 }

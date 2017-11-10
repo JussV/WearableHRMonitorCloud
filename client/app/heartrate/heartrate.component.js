@@ -11,8 +11,17 @@ export class HeartrateComponent {
   seriesOptions = [];
   chartOptions = {};
 
+  /**
+   * Load new data depending on the selected min and max
+   */
+
+
   /*@ngInject*/
   constructor($http, $filter, $q, $scope) {
+    $scope.afterSetExtremes = function(e) {
+      var chart = Highcharts.charts[0];
+      chart.showLoading('Loading data from server...');
+    }
     this.$http = $http;
     this.message = 'Hello';
     this.getData($q, $http, $filter).then(function(res) {
@@ -21,12 +30,28 @@ export class HeartrateComponent {
           selected: 1
         },
 
+        legend: {
+          enabled: true
+        },
+
+        navigator: {
+          enabled: true,
+          adaptToUpdatedData: false
+        },
+
         yAxis: {
-          plotLines: [{
-            value: 0,
-            width: 2,
-            color: 'silver'
-          }]
+          floor: 0,
+          ceiling: 100,
+         /* maxPadding: 0.1,
+          startOnTick: false,
+          endOnTick: true*/
+        },
+
+        xAxis: {
+          events: {
+            afterSetExtremes: $scope.afterSetExtremes
+          },
+          minRange: 3600 * 1000 // one hour
         },
 
         plotOptions: {
@@ -36,41 +61,20 @@ export class HeartrateComponent {
           }
         },
 
+        scrollbar: {
+          liveRedraw: false
+        },
+
         series: res
       };
     });
   }
 
-  drawChart(seriesOptions) {
-    //  var seriesCounter = 0;
-    this.chartOptions = {
-      rangeSelector: {
-        selected: 1
-      },
-
-      yAxis: {
-        plotLines: [{
-          value: 0,
-          width: 2,
-          color: 'silver'
-        }]
-      },
-
-      plotOptions: {
-        series: {
-          compare: 'percent',
-          showInNavigator: true
-        }
-      },
-
-      series: seriesOptions
-    };
-  }
-
   getData($q, $http, $filter) {
     let defer = $q.defer();
     let seriesOptions = [];
-    let names = ['MSFT', 'AAPL', 'GOOG'];
+    let names = [11, 200];
+    let uniquePhoneId = 'c25965ee-1854-4bf9-9a97-ec1c9c275d4b';
     let promises = [];
 
     function lastTask() {
@@ -78,14 +82,21 @@ export class HeartrateComponent {
       defer.resolve(seriesOptions);
     }
 
+    var today = new Date();
+    var todayToMiliSec = $filter('inMilliseconds')(today);
+    var beforeOneWeek = new Date();
+    beforeOneWeek.setDate(beforeOneWeek.getDate() - 7);
+    var beforeOneWeekToMiliSec = $filter('inMilliseconds')(beforeOneWeek);
     angular.forEach(names, function(name, i) {
       promises.push(
         $http({
           method: 'JSONP',
-          url: 'https://www.highcharts.com/samples/data/jsonp.php?filename=' + $filter('lowercase')(name) + '-c.json'}).then(function(data) {
+          url: 'http://localhost:3000/api/heartrates/' + name + '/heartrates?startDate=' + beforeOneWeekToMiliSec + '&endDate=' + todayToMiliSec + '&uniquePhoneId=' + uniquePhoneId })
+          .then(function(data) {
             seriesOptions[i] = {
               name: name,
-              data: data.data
+              data: data.data,
+              threshold: 0
             };
           })
       );
@@ -118,6 +129,11 @@ export default angular.module('wearableHrmonitorCloudApp.heartrate', [uiRouter])
           }
         }, true);
       }
+    };
+  })
+  .filter('inMilliseconds', function() {
+    return function(x) {
+      return new Date(x).getTime();
     };
   })
   .name;

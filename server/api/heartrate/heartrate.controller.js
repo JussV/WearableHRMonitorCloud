@@ -12,6 +12,8 @@
 
 import jsonpatch from 'fast-json-patch';
 import Heartrate from './heartrate.model';
+import each from 'async/each';
+import async from 'async';
 
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
@@ -21,6 +23,11 @@ function respondWithResult(res, statusCode) {
     }
     return null;
   };
+}
+
+function respondWithJSONArray(res, statusCode) {
+  statusCode = statusCode || 200;
+  return res;
 }
 
 function respondWithBulkResult(res, statusCode) {
@@ -97,6 +104,35 @@ export function create(req, res) {
     .catch(handleError(res));
 }
 
+// Show heartrates by device id
+export function heartRatesByDeviceByStartDateByEndDateByUniquePhoneId(req, res) {
+  var start = new Date(Number(req.query.startDate));
+  var end = new Date(Number(req.query.endDate));
+  var resultArr = [];
+  Heartrate.find({}, 'date value').where({device: req.params.device, uniquePhoneId: req.query.uniquePhoneId, $and: [{date: {$gte: start}}, {date: {$lte: end}}]})
+    .exec(function(err, result) {
+      if(err) {
+        return console.log(err);
+      }
+      async.each(result, function(val, callback) {
+        var date = new Date(val.date); // some mock date
+        var milliseconds = date.getTime();
+        var row = [milliseconds, val.value];
+        resultArr.push(row);
+        callback();
+      }, function(err) {
+        if(err) {
+          console.log('A file failed to process');
+          return handleError(res, 500);
+        } else {
+          console.log('All files have been processed successfully');
+          res.jsonp(resultArr)
+          return respondWithResult(res, 201);
+        }
+      });
+    });
+}
+
 
 // Bulk insert of Heart-rates in the DB
 export function bulkCreate(req, res) {
@@ -119,7 +155,6 @@ export function upsert(req, res) {
     Reflect.deleteProperty(req.body, '_id');
   }
   return Heartrate.findOneAndUpdate({_id: req.params.id}, req.body, {new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true}).exec()
-
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
