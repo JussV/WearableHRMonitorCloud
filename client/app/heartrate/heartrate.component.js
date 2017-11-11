@@ -8,26 +8,71 @@ require('highcharts/modules/exporting')(Highcharts);
 import routes from './heartrate.routes';
 
 export class HeartrateComponent {
-  seriesOptions = [];
-  chartOptions = {};
-
-  /**
-   * Load new data depending on the selected min and max
-   */
-
+ // seriesOptions = [];
+ // chartOptions = {};
 
   /*@ngInject*/
   constructor($http, $filter, $q, $scope) {
-    $scope.afterSetExtremes = function(e) {
-      var chart = Highcharts.charts[0];
-     // chart.showLoading('Loading data from server...');
-    }
     this.$http = $http;
+    this.$scope = $scope;
     this.message = 'Hello';
-    this.getData($q, $http, $filter).then(function(res) {
+    let self = this;
+    $scope.afterSetExtremes = function(e) {
+      let chart = Highcharts.charts[0];
+      chart.showLoading('Loading data from server...');
+      self.getData($http, $filter, $q, e.dataMin, e.dataMax).then(function(res) {
+        $scope.chartOptions.series = res;
+       /* angular.forEach(res, function(serie, i) {
+          //chart.series[i].setData(serie);
+          $scope.chartOptions.series[i].setData(serie);
+        });*/
+        chart.hideLoading();
+      });
+    };
+
+    let today = new Date();
+    let todayToMiliSec = $filter('inMilliseconds')(today);
+    let beforeOneWeek = new Date();
+    beforeOneWeek.setDate(beforeOneWeek.getDate() - 5);
+    let beforeOneWeekToMiliSec = $filter('inMilliseconds')(beforeOneWeek);
+    this.getData($http, $filter, $q, beforeOneWeekToMiliSec, todayToMiliSec).then(function(res) {
       $scope.chartOptions = {
         rangeSelector: {
-          selected: 1
+          buttons: [{
+            type: 'hour',
+            count: 1,
+            text: '1h'
+          }, {
+            type: 'hour',
+            count: 6,
+            text: '6h'
+          }, {
+            type: 'hour',
+            count: 12,
+            text: '12h'
+          }, {
+            type: 'day',
+            count: 1,
+            text: '1d'
+          }, {
+            type: 'day',
+            count: 3,
+            text: '3d'
+          }, {
+            type: 'week',
+            count: 1,
+            text: '1w'
+          }, {
+            type: 'week',
+            count: 2,
+            text: '2w'
+          }, {
+            type: 'month',
+            count: 1,
+            text: '1m'
+          }],
+          inputEnabled: true,
+          selected: 7
         },
 
         legend: {
@@ -36,7 +81,7 @@ export class HeartrateComponent {
 
         navigator: {
           enabled: true,
-          adaptToUpdatedData: false
+        //  adaptToUpdatedData: false
         },
 
         yAxis: {
@@ -44,19 +89,14 @@ export class HeartrateComponent {
             format: '{value}'
           },
           lineWidth: 3,
+          tickInterval: 15,
           opposite: false
-         /* floor: 0,
-          ceiling: 180,
-          allowDecimals: false*!/
-         /* maxPadding: 0.1,
-          startOnTick: false,
-          endOnTick: true*/
         },
 
         xAxis: {
-          events: {
+          /*events: {
             afterSetExtremes: $scope.afterSetExtremes
-          },
+          },*/
           minRange: 1800 * 1000, // half an hour
         },
 
@@ -74,9 +114,6 @@ export class HeartrateComponent {
 
         tooltip: {
           pointFormat: '<span style="color:{point.color}">●<strong>{point.y:.2f} bpm</strong> '
-       /*   pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.change}%)<br/>',
-          valueDecimals: 2,
-          split: true*/
         },
 
         series: res
@@ -84,54 +121,31 @@ export class HeartrateComponent {
     });
   }
 
-  getData($q, $http, $filter) {
+  getData($http, $filter, $q, startDate, endDate) {
     let defer = $q.defer();
     let seriesOptions = [];
-    let names = [11, 200];
     let uniquePhoneId = 'c25965ee-1854-4bf9-9a97-ec1c9c275d4b';
     let promises = [];
-
     function lastTask() {
-      console.log('finished');
       defer.resolve(seriesOptions);
     }
-
-    var today = new Date();
-    var todayToMiliSec = $filter('inMilliseconds')(today);
-    var beforeOneWeek = new Date();
-    beforeOneWeek.setDate(beforeOneWeek.getDate() - 5);
-    var beforeOneWeekToMiliSec = $filter('inMilliseconds')(beforeOneWeek);
-    /*angular.forEach(names, function(name, i) {
-      promises.push(
-        $http({
-          method: 'JSONP',
-          url: 'http://localhost:3000/api/heartrates/' + name + '/heartrates?startDate=' + beforeOneWeekToMiliSec + '&endDate=' + todayToMiliSec + '&uniquePhoneId=' + uniquePhoneId })
-          .then(function(data) {
-            seriesOptions[i] = {
-              name: name,
-              data: data.data,
-              threshold: 0
-            };
-          })
-      );
-    });
-    $q.all(promises).then(lastTask);
-    return defer.promise;*/
     promises.push(
-    $http({
-      method: 'JSONP',
-      url: 'http://localhost:3000/api/heartrates/show/chart?startDate=' + beforeOneWeekToMiliSec + '&endDate=' + todayToMiliSec + '&uniquePhoneId=' + uniquePhoneId })
-      .then(function(res) {
-        angular.forEach(res.data, function(obj, i) {
-          seriesOptions[i] = {
-            name: obj._id,
-            data: obj.data,
-          };
-        });
-      }));
+      $http({
+        method: 'JSONP',
+      //  url: 'http://localhost:3000/api/heartrates/show/chart?startDate=' + startDate + '&endDate=' + endDate + '&uniquePhoneId=' + uniquePhoneId })
+        url: 'http://localhost:3000/api/heartrates/show/chart?uniquePhoneId=' + uniquePhoneId })
+        .then(function(res) {
+          angular.forEach(res.data, function(obj, i) {
+            seriesOptions[i] = {
+              name: obj.device[0].name,
+              data: obj.data,
+            };
+          });
+        }));
     $q.all(promises).then(lastTask);
     return defer.promise;
   }
+
 }
 
 export default angular.module('wearableHrmonitorCloudApp.heartrate', [uiRouter])
@@ -151,9 +165,14 @@ export default angular.module('wearableHrmonitorCloudApp.heartrate', [uiRouter])
       },
       link: function(scope, element) {
         scope.$watch('options', function(newValue) {
-          if(newValue != undefined && newValue.series !== null && newValue.series.length > 0) {
-            var chart = Highcharts.stockChart(element[0], scope.options);
-            chart.series.setData(newValue, true);
+          if(typeof newValue != 'undefined' && newValue.series !== null && newValue.series.length > 0) {
+            Highcharts.stockChart(element[0], scope.options);
+           /* if(chart.series.setData) {
+             // chart.series.setData(newValue, true);
+              angular.forEach(newValue, function(serie, i) {
+                chart.series[i].setData(serie);
+              });
+            }*/
           }
         }, true);
       }

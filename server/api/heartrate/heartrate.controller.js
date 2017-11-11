@@ -106,45 +106,21 @@ export function create(req, res) {
 
 // Show heartrates by device id
 export function heartRatesByStartDateByEndDateByUniquePhoneId(req, res) {
-  var start = new Date(Number(req.query.startDate));
-  var end = new Date(Number(req.query.endDate));
- /* var resultArr = [];*/
- /* Heartrate.find({}, 'date value').where({ uniquePhoneId: req.query.uniquePhoneId, $and: [{date: {$gte: start}}, {date: {$lte: end}}]})
-    .exec(function(err, result) {
-      if(err) {
-        return console.log(err);
-      }
-      async.each(result, function(val, callback) {
-        var date = new Date(val.date); // some mock date
-        var milliseconds = date.getTime();
-        var row = [milliseconds, val.value];
-        resultArr.push(row);
-        callback();
-      }, function(err) {
-        if(err) {
-          console.log('A file failed to process');
-          return handleError(res, 500);
-        } else {
-          console.log('All files have been processed successfully');
-          res.jsonp(resultArr)
-          return respondWithResult(res, 201);
-        }
-      });
-    });*/
+  let start = new Date();
+  start.setMonth(start.getMonth() - 1);
+  let end = new Date();
+  if(req.query.startDate) {
+    start = new Date(Number(req.query.startDate));
+  }
+  if(req.query.endDate) {
+    end = new Date(Number(req.query.endDate));
+  }
 
-  Heartrate.aggregate([
+  /*Heartrate.aggregate([
     { $match: {
       uniquePhoneId: req.query.uniquePhoneId,
       $and: [{date: {$gte: start}}, {date: {$lte: end}}]}
     },
-    /*{
-      $lookup: {
-        from: 'devices',
-        localField: 'device',
-        foreignField: 'key',
-        as: 'device'
-      }
-    },*/
     { $project: { _id: 1, date: 1, value: 1, device: 1, index: { $const: [0, 1] }, dateToMilliSec: { $subtract: ['$date', new Date('1970-01-01T00:00:00.000Z')] } } },
     { $unwind: '$index' },
     { $group: {
@@ -158,8 +134,56 @@ export function heartRatesByStartDateByEndDateByUniquePhoneId(req, res) {
       _id: '$_id.device',
       data: { $push: '$data' },
       count: { $sum: 1 }
-    }}
+    }},
+    {
+      $lookup: {
+        from: 'devices',
+        localField: '_id',
+        foreignField: 'key',
+        as: 'device'
+      }
+    }
   ], function(err, resultArr) {
+    if(err) {
+      console.log('A file failed to process');
+      return handleError(res, 500);
+    } else {
+      console.log('All files have been processed successfully');
+      res.jsonp(resultArr)
+      return respondWithResult(res, 201);
+    }
+  });*/
+
+  var aggregation = Heartrate.aggregate([
+    { $match: {
+      uniquePhoneId: req.query.uniquePhoneId,
+      $and: [{date: {$gte: start}}, {date: {$lte: end}}]}
+    },
+    { $project: { _id: 1, date: 1, value: 1, device: 1, index: { $const: [0, 1] }, dateToMilliSec: { $subtract: ['$date', new Date('1970-01-01T00:00:00.000Z')] } } },
+    { $unwind: '$index' },
+    { $group: {
+      _id: { device: '$device', id: '$_id' },
+      data: {
+        $push: { $cond: [{$eq: ['$index', 0]}, '$dateToMilliSec', '$value'] }
+      },
+    }},
+    { $sort: { _id: 1 } },
+    { $group: {
+      _id: '$_id.device',
+      data: { $push: '$data' },
+      count: { $sum: 1 }
+    }},
+    {
+      $lookup: {
+        from: 'devices',
+        localField: '_id',
+        foreignField: 'key',
+        as: 'device'
+      }
+    }
+  ]);
+  aggregation.options = { allowDiskUse: true };
+  aggregation.exec(function(err, resultArr) {
     if(err) {
       console.log('A file failed to process');
       return handleError(res, 500);
