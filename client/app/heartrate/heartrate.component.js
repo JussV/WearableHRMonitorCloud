@@ -133,7 +133,7 @@ export class HeartrateComponent {
       $http({
         method: 'JSONP',
       //  url: 'http://localhost:3000/api/heartrates/show/chart?startDate=' + startDate + '&endDate=' + endDate + '&uniquePhoneId=' + uniquePhoneId })
-        url: 'http://localhost:3000/api/heartrates/show/chart?uniquePhoneId=' + uniquePhoneId })
+        url: 'https://unlock-your-wearable.herokuapp.com/api/heartrates/show/chart?uniquePhoneId=' + uniquePhoneId })
         .then(function(res) {
           angular.forEach(res.data, function(obj, i) {
             seriesOptions[i] = {
