@@ -12,6 +12,8 @@
 
 import jsonpatch from 'fast-json-patch';
 import Heartrate from './heartrate.model';
+import each from 'async/each';
+import async from 'async';
 
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
@@ -21,6 +23,11 @@ function respondWithResult(res, statusCode) {
     }
     return null;
   };
+}
+
+function respondWithJSONArray(res, statusCode) {
+  statusCode = statusCode || 200;
+  return res;
 }
 
 function respondWithBulkResult(res, statusCode) {
@@ -97,6 +104,97 @@ export function create(req, res) {
     .catch(handleError(res));
 }
 
+// Show heartrates by device id
+export function heartRatesByStartDateByEndDateByUniquePhoneId(req, res) {
+  let start = new Date();
+  start.setMonth(start.getMonth() - 1);
+  let end = new Date();
+  if(req.query.startDate) {
+    start = new Date(Number(req.query.startDate));
+  }
+  if(req.query.endDate) {
+    end = new Date(Number(req.query.endDate));
+  }
+
+  /*Heartrate.aggregate([
+    { $match: {
+      uniquePhoneId: req.query.uniquePhoneId,
+      $and: [{date: {$gte: start}}, {date: {$lte: end}}]}
+    },
+    { $project: { _id: 1, date: 1, value: 1, device: 1, index: { $const: [0, 1] }, dateToMilliSec: { $subtract: ['$date', new Date('1970-01-01T00:00:00.000Z')] } } },
+    { $unwind: '$index' },
+    { $group: {
+      _id: { device: '$device', id: '$_id' },
+      data: {
+        $push: { $cond: [{$eq: ['$index', 0]}, '$dateToMilliSec', '$value'] }
+      },
+    }},
+    { $sort: { _id: 1 } },
+    { $group: {
+      _id: '$_id.device',
+      data: { $push: '$data' },
+      count: { $sum: 1 }
+    }},
+    {
+      $lookup: {
+        from: 'devices',
+        localField: '_id',
+        foreignField: 'key',
+        as: 'device'
+      }
+    }
+  ], function(err, resultArr) {
+    if(err) {
+      console.log('A file failed to process');
+      return handleError(res, 500);
+    } else {
+      console.log('All files have been processed successfully');
+      res.jsonp(resultArr)
+      return respondWithResult(res, 201);
+    }
+  });*/
+
+  var aggregation = Heartrate.aggregate([
+    { $match: {
+      uniquePhoneId: req.query.uniquePhoneId,
+      $and: [{date: {$gte: start}}, {date: {$lte: end}}]}
+    },
+    { $project: { _id: 1, date: 1, value: 1, device: 1, index: { $const: [0, 1] }, dateToMilliSec: { $subtract: ['$date', new Date('1970-01-01T00:00:00.000Z')] } } },
+    { $unwind: '$index' },
+    { $group: {
+      _id: { device: '$device', id: '$_id' },
+      data: {
+        $push: { $cond: [{$eq: ['$index', 0]}, '$dateToMilliSec', '$value'] }
+      },
+    }},
+    { $sort: { _id: 1 } },
+    { $group: {
+      _id: '$_id.device',
+      data: { $push: '$data' },
+      count: { $sum: 1 }
+    }},
+    {
+      $lookup: {
+        from: 'devices',
+        localField: '_id',
+        foreignField: 'key',
+        as: 'device'
+      }
+    }
+  ]);
+  aggregation.options = { allowDiskUse: true };
+  aggregation.exec(function(err, resultArr) {
+    if(err) {
+      console.log('A file failed to process');
+      return handleError(res, 500);
+    } else {
+      console.log('All files have been processed successfully');
+      res.jsonp(resultArr)
+      return respondWithResult(res, 201);
+    }
+  });
+}
+
 
 // Bulk insert of Heart-rates in the DB
 export function bulkCreate(req, res) {
@@ -119,7 +217,6 @@ export function upsert(req, res) {
     Reflect.deleteProperty(req.body, '_id');
   }
   return Heartrate.findOneAndUpdate({_id: req.params.id}, req.body, {new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true}).exec()
-
     .then(respondWithResult(res))
     .catch(handleError(res));
 }

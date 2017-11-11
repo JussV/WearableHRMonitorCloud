@@ -13,5 +13,6 @@ router.patch('/:id', controller.patch);
 router.delete('/:id', controller.destroy);
 router.post('/bulk', controller.bulkCreate);
 router.get('/sync/latest', controller.latestSyncDate);
+router.get('/show/chart', controller.heartRatesByStartDateByEndDateByUniquePhoneId);
 
 module.exports = router;
