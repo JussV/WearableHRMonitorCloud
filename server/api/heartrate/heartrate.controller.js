@@ -12,8 +12,8 @@
 
 import jsonpatch from 'fast-json-patch';
 import Heartrate from './heartrate.model';
-import each from 'async/each';
-import async from 'async';
+//import each from 'async/each';
+//import async from 'async';
 
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
@@ -23,11 +23,6 @@ function respondWithResult(res, statusCode) {
     }
     return null;
   };
-}
-
-function respondWithJSONArray(res, statusCode) {
-  statusCode = statusCode || 200;
-  return res;
 }
 
 function respondWithBulkResult(res, statusCode) {
@@ -107,8 +102,11 @@ export function create(req, res) {
 // Show heartrates by device id
 export function heartRatesByStartDateByEndDateByUniquePhoneId(req, res) {
   let start = new Date();
-  start.setMonth(start.getMonth() - 1);
+  start.setDate(start.getDate() - 15);
   let end = new Date();
+  let user = req.user;
+  let uniquePhoneId = user.uniquePhoneId;
+  console.log('uniquePhoneId=' + uniquePhoneId);
   if(req.query.startDate) {
     start = new Date(Number(req.query.startDate));
   }
@@ -156,7 +154,7 @@ export function heartRatesByStartDateByEndDateByUniquePhoneId(req, res) {
 
   var aggregation = Heartrate.aggregate([
     { $match: {
-      uniquePhoneId: req.query.uniquePhoneId,
+      uniquePhoneId: uniquePhoneId,
       $and: [{date: {$gte: start}}, {date: {$lte: end}}]}
     },
     { $project: { _id: 1, date: 1, value: 1, device: 1, index: { $const: [0, 1] }, dateToMilliSec: { $subtract: ['$date', new Date('1970-01-01T00:00:00.000Z')] } } },
@@ -189,7 +187,7 @@ export function heartRatesByStartDateByEndDateByUniquePhoneId(req, res) {
       return handleError(res, 500);
     } else {
       console.log('All files have been processed successfully');
-      res.jsonp(resultArr)
+      res.jsonp(resultArr);
       return respondWithResult(res, 201);
     }
   });

@@ -8,8 +8,7 @@ require('highcharts/modules/exporting')(Highcharts);
 import routes from './heartrate.routes';
 
 export class HeartrateComponent {
- // seriesOptions = [];
- // chartOptions = {};
+
 
   /*@ngInject*/
   constructor($http, $filter, $q, $scope) {
@@ -17,25 +16,13 @@ export class HeartrateComponent {
     this.$scope = $scope;
     this.message = 'Hello';
     let self = this;
-    $scope.afterSetExtremes = function(e) {
-      let chart = Highcharts.charts[0];
-      chart.showLoading('Loading data from server...');
-      self.getData($http, $filter, $q, e.dataMin, e.dataMax).then(function(res) {
-        $scope.chartOptions.series = res;
-       /* angular.forEach(res, function(serie, i) {
-          //chart.series[i].setData(serie);
-          $scope.chartOptions.series[i].setData(serie);
-        });*/
-        chart.hideLoading();
-      });
-    };
 
-    let today = new Date();
+   /* let today = new Date();
     let todayToMiliSec = $filter('inMilliseconds')(today);
     let beforeOneWeek = new Date();
     beforeOneWeek.setDate(beforeOneWeek.getDate() - 5);
-    let beforeOneWeekToMiliSec = $filter('inMilliseconds')(beforeOneWeek);
-    this.getData($http, $filter, $q, beforeOneWeekToMiliSec, todayToMiliSec).then(function(res) {
+    let beforeOneWeekToMiliSec = $filter('inMilliseconds')(beforeOneWeek);*/
+    this.getData($http, $filter, $q).then(function(res) {
       $scope.chartOptions = {
         rangeSelector: {
           buttons: [{
@@ -66,13 +53,13 @@ export class HeartrateComponent {
             type: 'week',
             count: 2,
             text: '2w'
-          }, {
+          }/*, {
             type: 'month',
             count: 1,
             text: '1m'
-          }],
+          }*/],
           inputEnabled: true,
-          selected: 7
+          selected: 6
         },
 
         legend: {
@@ -94,9 +81,6 @@ export class HeartrateComponent {
         },
 
         xAxis: {
-          /*events: {
-            afterSetExtremes: $scope.afterSetExtremes
-          },*/
           minRange: 1800 * 1000, // half an hour
         },
 
@@ -106,7 +90,7 @@ export class HeartrateComponent {
           }
         },
 
-        colors: ['#f45b5b', '#7cb5ec', '#2b908f', '#7cb5ec', '#ECBF00', '#26645D', '#AA3939', '#90ed7d', '#F7DD00' ],
+        colors: ['#f45b5b', '#7cb5ec', '#2b908f', '#7cb5ec', '#ECBF00', '#26645D', '#AA3939', '#90ed7d', '#F7DD00'],
 
         scrollbar: {
           liveRedraw: false
@@ -121,10 +105,9 @@ export class HeartrateComponent {
     });
   }
 
-  getData($http, $filter, $q, startDate, endDate) {
+  getData($http, $filter, $q) {
     let defer = $q.defer();
     let seriesOptions = [];
-    let uniquePhoneId = 'c25965ee-1854-4bf9-9a97-ec1c9c275d4b';
     let promises = [];
     function lastTask() {
       defer.resolve(seriesOptions);
@@ -132,8 +115,8 @@ export class HeartrateComponent {
     promises.push(
       $http({
         method: 'JSONP',
-      //  url: 'http://localhost:3000/api/heartrates/show/chart?startDate=' + startDate + '&endDate=' + endDate + '&uniquePhoneId=' + uniquePhoneId })
-        url: 'https://unlock-your-wearable.herokuapp.com/api/heartrates/show/chart?uniquePhoneId=' + uniquePhoneId })
+      //  url: 'https://unlock-your-wearable.herokuapp.com/api/heartrates/show/chart'})
+        url: 'http://localhost:3000/api/heartrates/show/chart'})
         .then(function(res) {
           angular.forEach(res.data, function(obj, i) {
             seriesOptions[i] = {

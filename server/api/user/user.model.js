@@ -12,6 +12,11 @@ var UserSchema = new Schema({
     lowercase: true,
     required: true
   },
+  uniquePhoneId: {
+    type: String,
+    lowercase: true,
+    required: false
+  },
   role: {
     type: String,
     default: 'user'
@@ -21,7 +26,11 @@ var UserSchema = new Schema({
     required: true
   },
   provider: String,
-  salt: String
+  salt: String,
+  createdAt: {
+    type: Date,
+    default: Date.now()
+  }
 });
 
 /**

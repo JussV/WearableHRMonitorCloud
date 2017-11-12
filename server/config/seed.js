@@ -5,7 +5,7 @@
 
 'use strict';
 import Thing from '../api/thing/thing.model';
-import User from '../api/user/user.model';
+/*import User from '../api/user/user.model';*/
 import config from './environment/';
 
 export default function seedDatabaseIfNeeded() {
@@ -45,7 +45,7 @@ export default function seedDatabaseIfNeeded() {
       .then(() => console.log('finished populating things'))
       .catch(err => console.log('error populating things', err));
 
-    User.find({}).remove()
+   /* User.find({}).remove()
       .then(() => {
         User.create({
           provider: 'local',
@@ -61,6 +61,6 @@ export default function seedDatabaseIfNeeded() {
         })
         .then(() => console.log('finished populating users'))
         .catch(err => console.log('error populating users', err));
-      });
+      });*/
   }
 }
