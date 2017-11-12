@@ -4,6 +4,7 @@ var express = require('express');
 var controller = require('./heartrate.controller');
 
 var router = express.Router();
+import * as auth from '../../auth/auth.service';
 
 router.get('/', controller.index);
 router.get('/:id', controller.show);
@@ -13,6 +14,6 @@ router.patch('/:id', controller.patch);
 router.delete('/:id', controller.destroy);
 router.post('/bulk', controller.bulkCreate);
 router.get('/sync/latest', controller.latestSyncDate);
-router.get('/show/chart', controller.heartRatesByStartDateByEndDateByUniquePhoneId);
+router.get('/show/chart', auth.isAuthenticated(), controller.heartRatesByStartDateByEndDateByUniquePhoneId);
 
 module.exports = router;
