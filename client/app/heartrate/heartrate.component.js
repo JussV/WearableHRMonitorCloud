@@ -115,8 +115,8 @@ export class HeartrateComponent {
     promises.push(
       $http({
         method: 'JSONP',
-      //  url: 'https://unlock-your-wearable.herokuapp.com/api/heartrates/show/chart'})
-        url: 'http://localhost:3000/api/heartrates/show/chart'})
+        url: 'https://unlock-your-wearable.herokuapp.com/api/heartrates/show/chart'})
+       // url: 'http://localhost:3000/api/heartrates/show/chart'})
         .then(function(res) {
           angular.forEach(res.data, function(obj, i) {
             seriesOptions[i] = {
