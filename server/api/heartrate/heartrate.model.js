@@ -18,5 +18,13 @@ var HeartrateSchema = new mongoose.Schema({
   }
 });
 
+var MapReducedHeartRates15 = mongoose.model('MapReduce15', new mongoose.Schema(), 'heartrates-mapreduce-15');
+
+module.exports = {
+  Heartrate: mongoose.model('Heartrate', HeartrateSchema),
+  MapReducedHeartRates15: MapReducedHeartRates15
+}
+
 registerEvents(HeartrateSchema);
-export default mongoose.model('Heartrate', HeartrateSchema);
+//export default mongoose.model('Heartrate', HeartrateSchema);
+

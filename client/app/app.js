@@ -26,12 +26,13 @@ import constants from './app.constants';
 import util from '../components/util/util.module';
 import socket from '../components/socket/socket.service';
 import heartrate from './heartrate/heartrate.component';
+import statistic from './statistic/statistic.component';
 
 import './app.scss';
 
 angular.module('wearableHrmonitorCloudApp', [ngCookies, ngResource, ngSanitize, 'btford.socket-io',
   uiRouter, uiBootstrap, _Auth, account, admin, 'validation.match', navbar, footer, main,
-  constants, socket, util, heartrate
+  constants, socket, util, heartrate, statistic
 ])
   .config(routeConfig)
   .run(function($rootScope, $location, Auth) {

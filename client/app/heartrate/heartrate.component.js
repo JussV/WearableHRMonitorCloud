@@ -121,7 +121,7 @@ export class HeartrateComponent {
           angular.forEach(res.data, function(obj, i) {
             seriesOptions[i] = {
               name: obj.device[0].name,
-              data: obj.data,
+              data: obj.data
             };
           });
         }));
