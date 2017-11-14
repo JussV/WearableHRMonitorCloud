@@ -5,6 +5,7 @@ export default function($stateProvider) {
   $stateProvider
     .state('statistic', {
       url: '/statistic',
+      authenticate: true,
       template: '<statistic></statistic>'
     });
 }

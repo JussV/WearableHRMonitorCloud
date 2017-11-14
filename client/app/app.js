@@ -44,7 +44,7 @@ angular.module('wearableHrmonitorCloudApp', [ngCookies, ngResource, ngSanitize, 
         if(next.authenticate && !loggedIn) {
           $location.path('/login');
         }
-      });
+      }).catch(console.error);
     });
   });
 
