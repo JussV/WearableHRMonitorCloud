@@ -1,3 +1,12 @@
 <div  ng-if="promiseParam"></div>
   <hc-stats options="statsChartOpts">Placeholder for generic chart</hc-stats>
 </div>
+<div ng-show="loader.loading">
+  <div class="loading">
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+  </div>
+</div>
+

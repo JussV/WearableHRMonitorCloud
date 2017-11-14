@@ -13,8 +13,9 @@ export class StatisticComponent {
     this.$scope = $scope;
     this.message = 'Hello';
     let self = this;
+    $scope.loader = {loading: true};
 
-    this.getData($http, $filter, $q).then(function(res) {
+    this.getData($http, $filter, $q, $scope).then(function(res) {
       $scope.statsChartOpts = {
         rangeSelector: {
           inputEnabled: false,
@@ -62,12 +63,14 @@ export class StatisticComponent {
     });
   }
 
-  getData($http, $filter, $q) {
+  getData($http, $filter, $q, $scope) {
+    $scope.loader.loading = true;
     let defer = $q.defer();
     let seriesOptions = [];
     let promises = [];
     function lastTask() {
       defer.resolve(seriesOptions);
+      $scope.loader.loading = false;
     }
     promises.push(
       $http({

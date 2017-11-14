@@ -100,14 +100,13 @@ export function create(req, res) {
     .catch(handleError(res));
 }
 
-// Show heartrates for all devices
+// Show heartrates for all devices for the last 3 days
 export function heartRatesByStartDateByEndDateByUniquePhoneId(req, res) {
   let start = new Date();
   start.setDate(start.getDate() - 15);
   let end = new Date();
   let user = req.user;
   let uniquePhoneId = user.uniquePhoneId;
-  console.log('uniquePhoneId=' + uniquePhoneId);
   if(req.query.startDate) {
     start = new Date(Number(req.query.startDate));
   }
@@ -146,10 +145,8 @@ export function heartRatesByStartDateByEndDateByUniquePhoneId(req, res) {
   aggregation.options = { allowDiskUse: true };
   aggregation.exec(function(err, resultArr) {
     if(err) {
-      console.log('A file failed to process');
       return handleError(res, 500);
     } else {
-      console.log('All files have been processed successfully');
       res.jsonp(resultArr);
       return respondWithResult(res, 201);
     }

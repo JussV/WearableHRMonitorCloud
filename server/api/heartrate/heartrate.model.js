@@ -14,6 +14,7 @@ var HeartrateSchema = new mongoose.Schema({
   date: Date,
   createdAt: {
     type: Date,
+    index: true,
     default: Date.now()
   }
 });

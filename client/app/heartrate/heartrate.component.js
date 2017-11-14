@@ -16,13 +16,13 @@ export class HeartrateComponent {
     this.$scope = $scope;
     this.message = 'Hello';
     let self = this;
-
+    $scope.loader = {loading: true};
    /* let today = new Date();
     let todayToMiliSec = $filter('inMilliseconds')(today);
     let beforeOneWeek = new Date();
     beforeOneWeek.setDate(beforeOneWeek.getDate() - 5);
     let beforeOneWeekToMiliSec = $filter('inMilliseconds')(beforeOneWeek);*/
-    this.getData($http, $filter, $q).then(function(res) {
+    this.getData($http, $filter, $q, $scope).then(function(res) {
       $scope.chartOptions = {
         rangeSelector: {
           buttons: [{
@@ -105,12 +105,14 @@ export class HeartrateComponent {
     });
   }
 
-  getData($http, $filter, $q) {
+  getData($http, $filter, $q, $scope) {
+    $scope.loader.loading = true;
     let defer = $q.defer();
     let seriesOptions = [];
     let promises = [];
     function lastTask() {
       defer.resolve(seriesOptions);
+      $scope.loader.loading = false;
     }
     promises.push(
       $http({
