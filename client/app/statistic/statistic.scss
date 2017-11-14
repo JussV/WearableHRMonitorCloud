@@ -41,3 +41,15 @@ statistic.ng-scope .highcharts-range-selector-group{
     transform: scale(1);
   }
 }
+
+.alert {
+  margin-bottom: 1px;
+  height: 30px;
+  line-height: 30px;
+  padding: 0px 15px;
+  width: 113%;
+}
+
+form[name="statsForm"] button[type='submit'] {
+  float: right;
+}

@@ -11,6 +11,7 @@ import 'angular-socket-io';
 import uiRouter from 'angular-ui-router';
 import uiBootstrap from 'angular-ui-bootstrap';
 import 'angular-validation-match';
+import 'angularjs-datepicker';
 
 import {
   routeConfig
@@ -32,7 +33,7 @@ import './app.scss';
 
 angular.module('wearableHrmonitorCloudApp', [ngCookies, ngResource, ngSanitize, 'btford.socket-io',
   uiRouter, uiBootstrap, _Auth, account, admin, 'validation.match', navbar, footer, main,
-  constants, socket, util, heartrate, statistic
+  constants, socket, util, heartrate, statistic, '720kb.datepicker'
 ])
   .config(routeConfig)
   .run(function($rootScope, $location, Auth) {

@@ -15,6 +15,9 @@ var models = require('./heartrate.model');
 import _ from 'lodash';
 import async from 'async';
 import Device from '../device/device.model';
+var schedule = require('node-schedule');
+var rule = new schedule.RecurrenceRule();
+rule.hour = 23;
 
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
@@ -157,8 +160,18 @@ export function showHeartrateStatisticsbByInterval(req, res) {
   let startDate = Number(req.query.startDate);
   let endDate = Number(req.query.endDate);
   let uniquePhoneId = req.user.uniquePhoneId;
+  let minInterval = parseInt(req.query.interval);
+  var model = models.MapReducedHeartRates15;
+  switch (minInterval) {
+  case 15:
+    model = models.MapReducedHeartRates15;
+    break;
+  case 30:
+    model = models.MapReducedHeartRates30;
+    break;
+  }
 
-  models.MapReducedHeartRates15.find({'_id.upid': uniquePhoneId, '_id.time_at_minute': {$gte: new Date(startDate), $lt: new Date(endDate)}}, {}, {sort: {'_id.time_at_minute': 1}})
+  model.find({'_id.upid': uniquePhoneId, '_id.time_at_minute': {$gte: new Date(startDate), $lt: new Date(endDate)}}, {}, {sort: {'_id.time_at_minute': 1}})
     .exec(function(err, resultArr) {
       if(err) {
         return handleError(res, 500);
@@ -228,10 +241,65 @@ export function showHeartrateStatisticsbByInterval(req, res) {
         });
       }
     });
-
-
 }
 
+/*schedule.scheduleJob(rule, function() {
+  let intervalInMinutes = 15;
+  var map = function() {
+    var minuteSubset;
+    var mins = this.date.getMinutes();
+    var numberOfMinuteSubsets = 60 / interval;
+    var i;
+    for(i = 1; i <= numberOfMinuteSubsets; i++) {
+      if(i * interval > mins) {
+        minuteSubset = (i - 1) * interval;
+        break;
+      }
+    }
+    var time_at_minute = new Date(
+      this.date.getFullYear(),
+      this.date.getMonth(),
+      this.date.getDate(),
+      this.date.getHours(),
+      minuteSubset);
+
+    emit({time_at_minute, device: this.device, upid: this.uniquePhoneId}, {
+      device: this.device,
+      heartrate: this.value,
+      date: this.date
+    });
+  };
+
+  var reduce = function(key, values) {
+    var heartRateTotal = 0.0;
+    var count = values.length;
+    var heartrate = 0.0;
+    var device = key.device;
+    values.forEach(function(value) {
+      heartRateTotal = heartRateTotal + value.heartrate;
+    });
+
+    var result = {
+      upid: key.upid,
+      date: key.time_at_minute,
+      heartrate: heartRateTotal / count,
+      dateToMilliSec: key.time_at_minute.getTime(),
+      device: key.device,
+      values: values
+    };
+    return result;
+  };
+
+  models.Heartrate.mapReduce(
+    map,
+    reduce,
+    {
+      query: {value: {$ne: 0} },
+      out: 'resultOfMapReduce',
+      scope: {interval: intervalInMinutes}
+    }
+  );
+});*/
 
 export function cronJobMapReduceHeartRatesByInterval(req, res) {
   let startDate = req.body.startDate;
