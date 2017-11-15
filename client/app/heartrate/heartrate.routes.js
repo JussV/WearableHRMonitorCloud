@@ -5,6 +5,7 @@ export default function($stateProvider) {
   $stateProvider
     .state('heartrate', {
       url: '/heartrate',
+      authenticate: true,
       template: '<heartrate></heartrate>'
     });
 }

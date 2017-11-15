@@ -40,7 +40,7 @@ function startServer() {
 
   app.listen(5000, function() {
     //execute on every 5 hours
-    schedule.scheduleJob('0 */5 * * * *', function() {
+    /*schedule.scheduleJob('0 *!/5 * * * *', function() {
       let intervalInMinutes = 15;
 
       var o = {},
@@ -83,7 +83,7 @@ function startServer() {
           heartrate: heartRateTotal / count,
           dateToMilliSec: key.time_at_minute.getTime(),
           device: key.device,
-          values: values
+         // values: values
         };
         return result;
       };
@@ -96,7 +96,7 @@ function startServer() {
             } else {
               o.out = {
                 query: {
-                  value: {$ne: 0},
+                  value: {$gt: 0},
                   date: {$gt: new Date(lastMappedRecord.toObject().value.dateToMilliSec + 15 * 60 * 1000)}
                 },
                 reduce: 'heartrates-mapreduce-15',
@@ -117,11 +117,11 @@ function startServer() {
         }
       ], function(err, result) {
         if(err) {
-          console.log('error:' + err);
+       //   console.log('error:' + err);
         }
         console.log(result);
       });
-    });
+    });*/
   });
 }
 
