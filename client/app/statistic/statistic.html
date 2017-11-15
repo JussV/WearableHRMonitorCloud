@@ -1,0 +1,71 @@
+<form name="statsForm" novalidate  ng-submit="submit()">
+  <div  ng-if="promiseParam"></div>
+  <div class="container">
+
+    <div class="row">
+
+      <div class="col-md-2">
+        <div class="col-md-3">&nbsp;</div>
+        <div class="col-md-9">
+          <div class="alert alert-danger" style="display: -webkit-inline-box;" ng-show="!statsForm.startDate.$valid">Invalid Date</div>
+        </div>
+      </div>
+
+      <div class="col-md-2">
+        <div class="col-md-3">&nbsp;</div>
+        <div class="col-md-9">
+          <div class="alert alert-danger" style="display: -webkit-inline-box;" ng-show="!statsForm.endDate.$valid">Invalid Date</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="col-md-2">
+        <div class="col-md-3" style="padding-top: 6px;">From: </div>
+        <div class="col-md-9">
+          <datepicker date-format="yyyy-MM-dd" style="width: 120px">
+            <input class="form-control" name="startDate" ng-model="startDate" type="text" ng-pattern="/^(\d{4})-(\d{1,2})-(\d{1,2})$/"/>
+          </datepicker>
+        </div>
+      </div>
+
+      <div class="col-md-2">
+        <div class="col-md-3" style="padding-top: 6px;">To: </div>
+        <div class="col-md-9">
+          <datepicker date-format="yyyy-MM-dd" style="width: 120px">
+            <input class="form-control" name="endDate" ng-model="endDate" type="text" ng-pattern="/^(\d{4})-(\d{1,2})-(\d{1,2})$/" />
+          </datepicker>
+        </div>
+
+      </div>
+
+      <div class="col-md-4">
+        <div class="col-md-8">
+          <div style="text-align: -webkit-center;">Minutes Interval for aggregating measurements: </div>
+        </div>
+        <div class="col-md-4">
+          <select class="form-control" ng-model="statisticCtrl.intervalSelect" ng-options='interval for interval in statisticCtrl.intervals'>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <input class="btn btn-default" type="submit" id="submit" value="Filter Measurements" style="float:right" />
+      </div>
+
+    </div>
+  </div>
+  <hc-stats options="statsChartOpts">Placeholder for generic chart</hc-stats>
+</form>
+
+<div ng-show="loader.loading">
+  <div class="loading">
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+    <div class="loading-bar"></div>
+  </div>
+</div>
+

@@ -16,13 +16,13 @@ export class HeartrateComponent {
     this.$scope = $scope;
     this.message = 'Hello';
     let self = this;
-
+    $scope.loader = {loading: true};
    /* let today = new Date();
     let todayToMiliSec = $filter('inMilliseconds')(today);
     let beforeOneWeek = new Date();
     beforeOneWeek.setDate(beforeOneWeek.getDate() - 5);
     let beforeOneWeekToMiliSec = $filter('inMilliseconds')(beforeOneWeek);*/
-    this.getData($http, $filter, $q).then(function(res) {
+    this.getData($http, $filter, $q, $scope).then(function(res) {
       $scope.chartOptions = {
         rangeSelector: {
           buttons: [{
@@ -105,23 +105,25 @@ export class HeartrateComponent {
     });
   }
 
-  getData($http, $filter, $q) {
+  getData($http, $filter, $q, $scope) {
+    $scope.loader.loading = true;
     let defer = $q.defer();
     let seriesOptions = [];
     let promises = [];
     function lastTask() {
       defer.resolve(seriesOptions);
+      $scope.loader.loading = false;
     }
     promises.push(
       $http({
         method: 'JSONP',
         url: 'https://unlock-your-wearable.herokuapp.com/api/heartrates/show/chart'})
-       // url: 'http://localhost:3000/api/heartrates/show/chart'})
+      //  url: 'http://localhost:3000/api/heartrates/show/chart'})
         .then(function(res) {
           angular.forEach(res.data, function(obj, i) {
             seriesOptions[i] = {
               name: obj.device[0].name,
-              data: obj.data,
+              data: obj.data
             };
           });
         }));

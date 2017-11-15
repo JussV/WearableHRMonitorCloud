@@ -11,6 +11,7 @@ import 'angular-socket-io';
 import uiRouter from 'angular-ui-router';
 import uiBootstrap from 'angular-ui-bootstrap';
 import 'angular-validation-match';
+import 'angularjs-datepicker';
 
 import {
   routeConfig
@@ -26,12 +27,13 @@ import constants from './app.constants';
 import util from '../components/util/util.module';
 import socket from '../components/socket/socket.service';
 import heartrate from './heartrate/heartrate.component';
+import statistic from './statistic/statistic.component';
 
 import './app.scss';
 
 angular.module('wearableHrmonitorCloudApp', [ngCookies, ngResource, ngSanitize, 'btford.socket-io',
   uiRouter, uiBootstrap, _Auth, account, admin, 'validation.match', navbar, footer, main,
-  constants, socket, util, heartrate
+  constants, socket, util, heartrate, statistic, '720kb.datepicker'
 ])
   .config(routeConfig)
   .run(function($rootScope, $location, Auth) {
@@ -43,7 +45,7 @@ angular.module('wearableHrmonitorCloudApp', [ngCookies, ngResource, ngSanitize, 
         if(next.authenticate && !loggedIn) {
           $location.path('/login');
         }
-      });
+      }).catch(console.error);
     });
   });
 

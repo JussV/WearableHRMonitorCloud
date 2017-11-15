@@ -3,9 +3,9 @@
 export default function($stateProvider) {
   'ngInject';
   $stateProvider
-    .state('heartrate', {
-      url: '/heartrate',
+    .state('statistic', {
+      url: '/statistic',
       authenticate: true,
-      template: '<heartrate></heartrate>'
+      template: '<statistic></statistic>'
     });
 }
