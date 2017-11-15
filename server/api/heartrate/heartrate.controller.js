@@ -16,8 +16,8 @@ import _ from 'lodash';
 import async from 'async';
 import Device from '../device/device.model';
 var schedule = require('node-schedule');
-var rule = new schedule.RecurrenceRule();
-rule.hour = 23;
+/*var rule = new schedule.RecurrenceRule();
+rule.minute = 5;*/
 
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
@@ -243,8 +243,38 @@ export function showHeartrateStatisticsbByInterval(req, res) {
     });
 }
 
-/*schedule.scheduleJob(rule, function() {
+/*schedule.scheduleJob('0 *!/2 * * *', function() {
   let intervalInMinutes = 15;
+
+  async.waterfall([
+    function(callback) {
+      models.MapReducedHeartRates15.findOne({}, {}, { sort: {'_id.time_at_minute': -1} }, function(err, lastMappedRecord) {
+        if(err) {
+          return callback(err);
+        } else {
+          return callback(null, lastMappedRecord);
+        }
+      });
+    },
+    function(lastMappedRecord, callback) {
+      models.Heartrate.mapReduce(
+        map,
+        reduce,
+        {
+          query: {value: {$ne: 0}, date: {$gt: new Date(lastMappedRecord.time_at_minute.getTime() + intervalInMinutes * 60 * 1000) } },
+          out: 'resultOfMapReduce',
+          scope: {interval: intervalInMinutes}
+        }
+      );
+      callback(null, 'Done');
+    }
+  ], function(err, result) {
+    if(err) {
+      return handleError(result, 500);
+    }
+    console.log(result);
+  });
+
   var map = function() {
     var minuteSubset;
     var mins = this.date.getMinutes();
@@ -274,7 +304,6 @@ export function showHeartrateStatisticsbByInterval(req, res) {
     var heartRateTotal = 0.0;
     var count = values.length;
     var heartrate = 0.0;
-    var device = key.device;
     values.forEach(function(value) {
       heartRateTotal = heartRateTotal + value.heartrate;
     });
@@ -290,7 +319,7 @@ export function showHeartrateStatisticsbByInterval(req, res) {
     return result;
   };
 
-  models.Heartrate.mapReduce(
+  /!*models.Heartrate.mapReduce(
     map,
     reduce,
     {
@@ -298,7 +327,7 @@ export function showHeartrateStatisticsbByInterval(req, res) {
       out: 'resultOfMapReduce',
       scope: {interval: intervalInMinutes}
     }
-  );
+  );*!/
 });*/
 
 export function cronJobMapReduceHeartRatesByInterval(req, res) {
