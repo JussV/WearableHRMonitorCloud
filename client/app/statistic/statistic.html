@@ -56,8 +56,13 @@
       </div>
 
     </div>
+
+    <div class="alert alert-warning warning-dimens" ng-if="warning">{{warning}}</div>
+    <div ng-if="warning === undefined">
+      <hc-stats options="statsChartOpts">Placeholder for generic chart</hc-stats>
+    </div>
+
   </div>
-  <hc-stats options="statsChartOpts">Placeholder for generic chart</hc-stats>
 </form>
 
 <div ng-show="loader.loading">

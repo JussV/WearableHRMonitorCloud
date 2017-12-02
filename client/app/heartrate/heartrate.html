@@ -1,12 +1,18 @@
 <!--<div>This is the heartrate view. {{heartrateCtrl.message}}</div>-->
-<div  ng-if="promiseParam"></div>
-  <hc-chart options="chartOptions">Placeholder for generic chart</hc-chart>
-</div>
-<div ng-show="loader.loading">
-  <div class="loading">
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
-    <div class="loading-bar"></div>
+<div class="container">
+
+  <div class="alert alert-warning warning-dimens" ng-if="warning">{{warning}}</div>
+  <div ng-if="warning === undefined">
+    <hc-chart options="chartOptions">Placeholder for generic chart</hc-chart>
   </div>
+
+  <div ng-show="loader.loading">
+    <div class="loading">
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+    </div>
+  </div>
+
 </div>

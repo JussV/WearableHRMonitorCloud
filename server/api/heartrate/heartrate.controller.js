@@ -103,7 +103,7 @@ export function create(req, res) {
     .catch(handleError(res));
 }
 
-// Show heartrates for all devices for the last 3 days
+// Show heartrates by default for all devices for the last 15 days
 export function heartRatesByStartDateByEndDateByUniquePhoneId(req, res) {
   let start = new Date();
   start.setDate(start.getDate() - 15);
@@ -176,6 +176,9 @@ export function showHeartrateStatisticsbByInterval(req, res) {
       if(err) {
         return handleError(res, 500);
       } else {
+        if(resultArr === null || resultArr.length == 0) {
+          return res.jsonp({ warning: 'There are no results for specified dates.'});
+        }
         async.waterfall([
           function findUniqueDevices(callback) {
             let devices = _.uniqBy(resultArr, function(item) {
@@ -206,7 +209,7 @@ export function showHeartrateStatisticsbByInterval(req, res) {
             //  let deviceItemKey = deviceItem.toObject().value.device;
               let obj = {device: deviceItem};
               async.map(resultArr, function(item, cb) {
-                if(item.toObject().value.device === deviceItem.key) {
+                if(item.toObject().value.device === deviceItem.key && item.toObject().value.dateToMilliSec) {
                   let row = [item.toObject().value.dateToMilliSec, item.toObject().value.heartrate];
                   return cb(null, row);
                 } else {
@@ -219,7 +222,7 @@ export function showHeartrateStatisticsbByInterval(req, res) {
                   async.filter(results, function(item, cb) {
                     cb(null, item != undefined);
                   }, function(err, finalResult) {
-                    if (err) {
+                    if(err) {
                       return callback(err);
                     } else {
                       obj.heartrates = finalResult;

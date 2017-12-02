@@ -14,6 +14,7 @@ export function routeConfig($urlRouterProvider, $locationProvider, $sceDelegateP
     'https://www.highcharts.com/samples/data/jsonp.php**',
     'https://www.highcharts.com/samples/data/from-sql.php**',
     'https://unlock-your-wearable.herokuapp.com/api/heartrates/show/chart**',
+    'https://unlock-your-wearable.herokuapp.com/api/heartrates/**',
     'http://localhost:3000/api/heartrates/show/chart**'
   ]);
 }
