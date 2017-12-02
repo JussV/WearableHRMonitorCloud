@@ -22,51 +22,52 @@ export class StatisticComponent {
     let fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(today.getDate() - 5);
     $scope.startDate = fiveDaysAgo.toISOString().slice(0, 10);
+    $scope.statsChartOpts = {
+      rangeSelector: {
+        inputEnabled: false,
+      },
+
+      legend: {
+        enabled: true
+      },
+
+      navigator: {
+        enabled: true,
+      },
+
+      yAxis: {
+        labels: {
+          format: '{value}'
+        },
+        lineWidth: 3,
+        tickInterval: 15,
+        opposite: false
+      },
+
+      xAxis: {
+        minRange: 1800 * 1000, // half an hour
+      },
+
+      plotOptions: {
+        series: {
+          showInNavigator: true,
+        }
+      },
+
+      colors: ['#F7DD00', '#2b908f', '#26645D', '#ECBF00', '#AA3939', '#90ed7d', '#f45b5b', '#7cb5ec'],
+
+      scrollbar: {
+        liveRedraw: false
+      },
+
+      tooltip: {
+        pointFormat: '<span style="color:{point.color}">●<strong>{point.y:.2f} bpm</strong> '
+      },
+
+      series: []
+    };
     this.getData($http, $filter, $q, $scope, fiveDaysAgo.getTime(), today.getTime(), this.intervalSelect).then(function(res) {
-      $scope.statsChartOpts = {
-        rangeSelector: {
-          inputEnabled: false,
-        },
-
-        legend: {
-          enabled: true
-        },
-
-        navigator: {
-          enabled: true,
-        },
-
-        yAxis: {
-          labels: {
-            format: '{value}'
-          },
-          lineWidth: 3,
-          tickInterval: 15,
-          opposite: false
-        },
-
-        xAxis: {
-          minRange: 1800 * 1000, // half an hour
-        },
-
-        plotOptions: {
-          series: {
-            showInNavigator: true,
-          }
-        },
-
-        colors: ['#F7DD00', '#2b908f', '#26645D', '#ECBF00', '#AA3939', '#90ed7d', '#f45b5b', '#7cb5ec'],
-
-        scrollbar: {
-          liveRedraw: false
-        },
-
-        tooltip: {
-          pointFormat: '<span style="color:{point.color}">●<strong>{point.y:.2f} bpm</strong> '
-        },
-
-        series: res
-      };
+      $scope.statsChartOpts.series = res;
     });
 
     $scope.submit = function() {
@@ -104,10 +105,15 @@ export class StatisticComponent {
         url: 'https://unlock-your-wearable.herokuapp.com/api/heartrates/show/interval/statistics?interval=' + interval + '&startDate=' + start + '&endDate=' + end})
         .then(function(res) {
           angular.forEach(res.data, function(obj, i) {
-            seriesOptions[i] = {
-              name: obj.device.name,
-              data: obj.heartrates
-            };
+            if(res.data.warning) {
+              $scope.warning = res.data.warning;
+            } else {
+              $scope.warning = undefined;
+              seriesOptions[i] = {
+                name: obj.device.name,
+                data: obj.heartrates
+              };
+            }
           });
         }));
     $q.all(promises).then(lastTask);

@@ -120,17 +120,21 @@ export class HeartrateComponent {
         url: 'https://unlock-your-wearable.herokuapp.com/api/heartrates/show/chart'})
       //  url: 'http://localhost:3000/api/heartrates/show/chart'})
         .then(function(res) {
-          angular.forEach(res.data, function(obj, i) {
-            seriesOptions[i] = {
-              name: obj.device[0].name,
-              data: obj.data
-            };
-          });
+          if(res.data === null || res.data.length == 0) {
+            $scope.warning = 'There are no results for specified dates.';
+          } else {
+            $scope.warning = undefined;
+            angular.forEach(res.data, function(obj, i) {
+              seriesOptions[i] = {
+                name: obj.device[0].name,
+                data: obj.data
+              };
+            });
+          }
         }));
     $q.all(promises).then(lastTask);
     return defer.promise;
   }
-
 }
 
 export default angular.module('wearableHrmonitorCloudApp.heartrate', [uiRouter])
