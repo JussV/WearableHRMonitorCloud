@@ -101,8 +101,8 @@ export class StatisticComponent {
     promises.push(
       $http({
         method: 'JSONP',
-       url: 'http://localhost:3000/api/heartrates/show/interval/statistics?interval=' + interval + '&startDate=' + start + '&endDate=' + end})
-      //  url: 'https://unlock-your-wearable.herokuapp.com/api/heartrates/show/interval/statistics?interval=' + interval + '&startDate=' + start + '&endDate=' + end})
+      // url: 'http://localhost:3000/api/heartrates/show/interval/statistics?interval=' + interval + '&startDate=' + start + '&endDate=' + end})
+        url: 'https://unlock-your-wearable.herokuapp.com/api/heartrates/show/interval/statistics?interval=' + interval + '&startDate=' + start + '&endDate=' + end})
         .then(function(res) {
           angular.forEach(res.data, function(obj, i) {
             if(res.data.warning) {
