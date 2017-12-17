@@ -40,9 +40,9 @@ function startServer() {
 
   app.listen(5000, function() {
     //execute at 5 AM every day
-    let intervals = ['15', '30'];
-    let modelArr = [models.MapReducedHeartRates15, models.MapReducedHeartRates30];
-    let collections = ['heartrates-mapreduce-15', 'heartrates-mapreduce-30'];
+    let intervals = ['15', '30', '60'];
+    let modelArr = [models.MapReducedHeartRates15, models.MapReducedHeartRates30, models.MapReducedHeartRates60];
+    let collections = ['heartrates-mapreduce-15', 'heartrates-mapreduce-30', 'heartrates-mapreduce-60'];
     let delay = 0;
     let runJobAtHour = 5;
     let runJobAtMin = 0;

@@ -169,6 +169,9 @@ export function showHeartrateStatisticsbByInterval(req, res) {
   case 30:
     model = models.MapReducedHeartRates30;
     break;
+  case 60:
+    model = models.MapReducedHeartRates60;
+    break;
   }
 
   model.find({'_id.upid': uniquePhoneId, '_id.time_at_minute': {$gte: new Date(startDate), $lt: new Date(endDate)}}, {}, {sort: {'_id.time_at_minute': 1}})
