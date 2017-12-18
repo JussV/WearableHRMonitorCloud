@@ -13,15 +13,15 @@ export class StatisticComponent {
     this.$http = $http;
     this.$scope = $scope;
     this.message = 'Hello';
-    this.intervals = [15, 30];
+    this.intervals = [15, 30, 60];
     this.intervalSelect = this.intervals[0];
     let self = this;
     $scope.loader = {loading: true};
     let today = new Date();
-    $scope.endDate = today.toISOString().slice(0, 10);
+    $scope.endDate = new Date(today.toISOString().slice(0, 10));
     let fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(today.getDate() - 5);
-    $scope.startDate = fiveDaysAgo.toISOString().slice(0, 10);
+    $scope.startDate = new Date(fiveDaysAgo.toISOString().slice(0, 10));
     $scope.statsChartOpts = {
       rangeSelector: {
         inputEnabled: false,
@@ -66,7 +66,7 @@ export class StatisticComponent {
 
       series: []
     };
-    this.getData($http, $filter, $q, $scope, fiveDaysAgo.getTime(), today.getTime(), this.intervalSelect).then(function(res) {
+    this.getData($http, $filter, $q, $scope, $scope.startDate.getTime(), $scope.endDate.getTime(), this.intervalSelect).then(function(res) {
       $scope.statsChartOpts.series = res;
     });
 
