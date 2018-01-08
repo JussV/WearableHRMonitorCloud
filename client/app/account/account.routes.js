@@ -11,7 +11,7 @@ export default function routes($stateProvider) {
   })
     .state('logout', {
       url: '/logout?referrer',
-      referrer: 'main',
+      referrer: 'statistic',
       template: '',
       controller($state, Auth) {
         'ngInject';

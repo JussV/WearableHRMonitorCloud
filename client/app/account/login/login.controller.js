@@ -27,8 +27,8 @@ export default class LoginController {
         password: this.user.password
       })
         .then(() => {
-          // Logged in, redirect to home
-          this.$state.go('main');
+          // Logged in, redirect to statistic page
+          this.$state.go('statistic');
         })
         .catch(err => {
           this.errors.login = err.message;
