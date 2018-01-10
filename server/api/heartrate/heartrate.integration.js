@@ -1,23 +1,77 @@
 'use strict';
 
-/* globals describe, expect, it, beforeEach, afterEach */
+/* globals describe, expect, it, before, after, beforeEach, afterEach */
 
 var app = require('../..');
 import request from 'supertest';
-
-var newHeartrate;
+var models = require('./heartrate.model');
+import User from '../user/user.model';
 
 describe('Heartrate API:', function() {
-  describe('GET /api/heartrates', function() {
-    var heartrates;
+  var token;
+  var user;
+  before(function() {
+    return models.Heartrate.remove()
+      .then(() => {
+        return models.Heartrate.create({
+          date: new Date(),
+          value: 84,
+          uniquePhoneId: 'c25965ee-1854-4bf9-9a97-ec1c9c275d4b',
+          device: 11
+        });
+      });
+  });
 
+  // Clear users before testing
+  before(function() {
+    return User.remove().then(function() {
+      user = new User({
+        provider: 'local',
+        role: 'user',
+        name: 'test',
+        email: 'test@example.com',
+        uniquePhoneId: 'c25965ee-1854-4bf9-9a97-ec1c9c275d4b',
+        password: 'passpass'
+      });
+
+      return user.save();
+    });
+  });
+
+  before(function(done) {
+    request(app)
+      .post('/auth/local')
+      .send({
+        email: 'test@example.com',
+        password: 'passpass'
+      })
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        token = res.body.token;
+        done();
+      });
+  });
+
+  after(function() {
+    return models.Heartrate.remove();
+  });
+
+  after(function() {
+    return User.remove();
+  });
+
+  describe('GET /api/heartrates/sync/latest', function() {
+    var heartrates;
     beforeEach(function(done) {
       request(app)
-        .get('/api/heartrates')
+        .get('/api/heartrates/sync/latest')
+        .query({upid: 'c25965ee-1854-4bf9-9a97-ec1c9c275d4b', device: 11})
         .expect(200)
         .expect('Content-Type', /json/)
         .end((err, res) => {
           if(err) {
+            console.log(err);
             return done(err);
           }
           heartrates = res.body;
@@ -25,166 +79,136 @@ describe('Heartrate API:', function() {
         });
     });
 
-    it('should respond with JSON array', function() {
+    it('should respond with JSON object', function() {
+      expect(heartrates).to.be.instanceOf(Object);
+    });
+  });
+
+  describe('POST /api/heartrates/bulk', function() {
+    var result;
+    var date = new Date();
+    date.setDate(date.getDate() - 1);
+    beforeEach(function(done) {
+      request(app)
+        .post('/api/heartrates/bulk')
+        .set('Content-Type', 'application/json')
+        .send({heartrates: [{
+          date: date,
+          value: 84,
+          uniquePhoneId: 'c25965ee-1854-4bf9-9a97-ec1c9c275d4b',
+          device: 11
+        }, {
+          date: date,
+          value: 88,
+          uniquePhoneId: 'c25965ee-1854-4bf9-9a97-ec1c9c275d4b',
+          device: 11
+        }, {
+          date: date,
+          value: 101,
+          uniquePhoneId: 'c25965ee-1854-4bf9-9a97-ec1c9c275d4b',
+          device: 11
+        }, {
+          date: new Date(),
+          value: 72,
+          uniquePhoneId: 'c25965ee-1854-4bf9-9a97-ec1c9c275d4b',
+          device: 11
+        }, {
+          date: new Date(),
+          value: 81,
+          uniquePhoneId: 'c25965ee-1854-4bf9-9a97-ec1c9c275d4b',
+          device: 11
+        }]})
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if(err) {
+            console.log(err);
+            return done(err);
+          }
+          result = res.body;
+          console.log(result);
+          done();
+        });
+    });
+
+    it('should respond with object that returns number of inserted records', function() {
+      expect(result).to.be.instanceOf(Object);
+      expect(result.length).to.equal(5);
+    });
+  });
+
+  describe('GET /api/heartrates/show/chart', function() {
+    var heartrates;
+
+    beforeEach(function(done) {
+      request(app)
+        .get('/api/heartrates/show/chart')
+        .set('authorization', 'Bearer ' + token)
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if(err) {
+            return done(err);
+          }
+          heartrates = res.body;
+          console.log(heartrates);
+          done();
+        });
+    });
+
+    it('should respond with heartrate array', function() {
       expect(heartrates).to.be.instanceOf(Array);
     });
   });
 
-  describe('POST /api/heartrates', function() {
-    beforeEach(function(done) {
-      request(app)
-        .post('/api/heartrates')
-        .send({
-          name: 'New Heartrate',
-          info: 'This is the brand new heartrate!!!'
-        })
-        .expect(201)
-        .expect('Content-Type', /json/)
-        .end((err, res) => {
-          if(err) {
-            return done(err);
-          }
-          newHeartrate = res.body;
-          done();
-        });
-    });
-
-    it('should respond with the newly created heartrate', function() {
-      expect(newHeartrate.name).to.equal('New Heartrate');
-      expect(newHeartrate.info).to.equal('This is the brand new heartrate!!!');
-    });
-  });
-
-  describe('GET /api/heartrates/:id', function() {
-    var heartrate;
+  describe('GET /api/heartrates/show/chart', function() {
+    var heartrates;
 
     beforeEach(function(done) {
       request(app)
-        .get(`/api/heartrates/${newHeartrate._id}`)
+        .get('/api/heartrates/show/chart')
+        .set('authorization', 'Bearer ' + token)
         .expect(200)
         .expect('Content-Type', /json/)
         .end((err, res) => {
           if(err) {
             return done(err);
           }
-          heartrate = res.body;
+          heartrates = res.body;
+          console.log(heartrates);
           done();
         });
     });
 
-    afterEach(function() {
-      heartrate = {};
-    });
-
-    it('should respond with the requested heartrate', function() {
-      expect(heartrate.name).to.equal('New Heartrate');
-      expect(heartrate.info).to.equal('This is the brand new heartrate!!!');
+    it('should respond with heartrate array', function() {
+      expect(heartrates).to.be.instanceOf(Array);
     });
   });
 
-  describe('PUT /api/heartrates/:id', function() {
-    var updatedHeartrate;
-
+  describe('GET /api/heartrates/show/interval/statistics/', function() {
+    let result;
+    let startDate = new Date();
+    startDate.setDate(startDate.getDate() - 10);
+    let endDate = new Date();
     beforeEach(function(done) {
       request(app)
-        .put(`/api/heartrates/${newHeartrate._id}`)
-        .send({
-          name: 'Updated Heartrate',
-          info: 'This is the updated heartrate!!!'
-        })
-        .expect(200)
-        .expect('Content-Type', /json/)
-        .end(function(err, res) {
-          if(err) {
-            return done(err);
-          }
-          updatedHeartrate = res.body;
-          done();
-        });
-    });
-
-    afterEach(function() {
-      updatedHeartrate = {};
-    });
-
-    it('should respond with the updated heartrate', function() {
-      expect(updatedHeartrate.name).to.equal('Updated Heartrate');
-      expect(updatedHeartrate.info).to.equal('This is the updated heartrate!!!');
-    });
-
-    it('should respond with the updated heartrate on a subsequent GET', function(done) {
-      request(app)
-        .get(`/api/heartrates/${newHeartrate._id}`)
+        .get('/api/heartrates/show/interval/statistics/')
+        .set('authorization', 'Bearer ' + token)
+        .query({startDate: startDate, endDate: endDate, interval: 15})
         .expect(200)
         .expect('Content-Type', /json/)
         .end((err, res) => {
           if(err) {
             return done(err);
           }
-          let heartrate = res.body;
-
-          expect(heartrate.name).to.equal('Updated Heartrate');
-          expect(heartrate.info).to.equal('This is the updated heartrate!!!');
-
-          done();
-        });
-    });
-  });
-
-  describe('PATCH /api/heartrates/:id', function() {
-    var patchedHeartrate;
-
-    beforeEach(function(done) {
-      request(app)
-        .patch(`/api/heartrates/${newHeartrate._id}`)
-        .send([
-          { op: 'replace', path: '/name', value: 'Patched Heartrate' },
-          { op: 'replace', path: '/info', value: 'This is the patched heartrate!!!' }
-        ])
-        .expect(200)
-        .expect('Content-Type', /json/)
-        .end(function(err, res) {
-          if(err) {
-            return done(err);
-          }
-          patchedHeartrate = res.body;
+          result = res.body;
           done();
         });
     });
 
-    afterEach(function() {
-      patchedHeartrate = {};
-    });
-
-    it('should respond with the patched heartrate', function() {
-      expect(patchedHeartrate.name).to.equal('Patched Heartrate');
-      expect(patchedHeartrate.info).to.equal('This is the patched heartrate!!!');
-    });
-  });
-
-  describe('DELETE /api/heartrates/:id', function() {
-    it('should respond with 204 on successful removal', function(done) {
-      request(app)
-        .delete(`/api/heartrates/${newHeartrate._id}`)
-        .expect(204)
-        .end(err => {
-          if(err) {
-            return done(err);
-          }
-          done();
-        });
-    });
-
-    it('should respond with 404 when heartrate does not exist', function(done) {
-      request(app)
-        .delete(`/api/heartrates/${newHeartrate._id}`)
-        .expect(404)
-        .end(err => {
-          if(err) {
-            return done(err);
-          }
-          done();
-        });
+    it('should respond with warning that no data are found', function() {
+      expect(result).to.be.instanceOf(Object);
+      expect(result.warning).to.equal('There are no results for specified dates.');
     });
   });
 });

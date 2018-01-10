@@ -5,20 +5,24 @@
 var proxyquire = require('proxyquire').noPreserveCache();
 
 var heartrateCtrlStub = {
-  index: 'heartrateCtrl.index',
-  show: 'heartrateCtrl.show',
-  create: 'heartrateCtrl.create',
-  upsert: 'heartrateCtrl.upsert',
-  patch: 'heartrateCtrl.patch',
-  destroy: 'heartrateCtrl.destroy'
+  bulkCreate: 'heartrateCtrl.bulkCreate',
+  latestSyncDate: 'heartrateCtrl.latestSyncDate',
+  heartRatesByStartDateByEndDateByUniquePhoneId: 'heartrateCtrl.heartRatesByStartDateByEndDateByUniquePhoneId',
+  showHeartrateStatisticsbByInterval: 'heartrateCtrl.showHeartrateStatisticsbByInterval'
+};
+
+var authServiceStub = {
+  isAuthenticated() {
+    return 'authService.isAuthenticated';
+  },
+  hasRole(role) {
+    return `authService.hasRole.${role}`;
+  }
 };
 
 var routerStub = {
   get: sinon.spy(),
-  put: sinon.spy(),
-  patch: sinon.spy(),
-  post: sinon.spy(),
-  delete: sinon.spy()
+  post: sinon.spy()
 };
 
 // require the index with our stubbed out modules
@@ -28,7 +32,8 @@ var heartrateIndex = proxyquire('./index.js', {
       return routerStub;
     }
   },
-  './heartrate.controller': heartrateCtrlStub
+  './heartrate.controller': heartrateCtrlStub,
+  '../../auth/auth.service': authServiceStub
 });
 
 describe('Heartrate API Router:', function() {
@@ -36,50 +41,35 @@ describe('Heartrate API Router:', function() {
     expect(heartrateIndex).to.equal(routerStub);
   });
 
-  describe('GET /api/heartrates', function() {
-    it('should route to heartrate.controller.index', function() {
+  describe('GET /api/heartrates/sync/latest', function() {
+    it('should route to heartrate.controller.latestSyncDate', function() {
       expect(routerStub.get
-        .withArgs('/', 'heartrateCtrl.index')
+        .withArgs('/sync/latest', 'heartrateCtrl.latestSyncDate')
         ).to.have.been.calledOnce;
     });
   });
 
-  describe('GET /api/heartrates/:id', function() {
-    it('should route to heartrate.controller.show', function() {
-      expect(routerStub.get
-        .withArgs('/:id', 'heartrateCtrl.show')
-        ).to.have.been.calledOnce;
-    });
-  });
-
-  describe('POST /api/heartrates', function() {
-    it('should route to heartrate.controller.create', function() {
+  describe('POST /api/heartrates/bulk', function() {
+    it('should route to heartrate.controller.bulkCreate', function() {
       expect(routerStub.post
-        .withArgs('/', 'heartrateCtrl.create')
+        .withArgs('/bulk', 'heartrateCtrl.bulkCreate')
         ).to.have.been.calledOnce;
     });
   });
 
-  describe('PUT /api/heartrates/:id', function() {
-    it('should route to heartrate.controller.upsert', function() {
-      expect(routerStub.put
-        .withArgs('/:id', 'heartrateCtrl.upsert')
+  describe('GET /api/heartrates/show/chart', function() {
+    it('should route to heartrate.controller.heartRatesByStartDateByEndDateByUniquePhoneId', function() {
+      expect(routerStub.get
+        .withArgs('/show/chart', 'authService.isAuthenticated', 'heartrateCtrl.heartRatesByStartDateByEndDateByUniquePhoneId')
         ).to.have.been.calledOnce;
     });
   });
 
-  describe('PATCH /api/heartrates/:id', function() {
-    it('should route to heartrate.controller.patch', function() {
-      expect(routerStub.patch
-        .withArgs('/:id', 'heartrateCtrl.patch')
-        ).to.have.been.calledOnce;
-    });
-  });
 
-  describe('DELETE /api/heartrates/:id', function() {
-    it('should route to heartrate.controller.destroy', function() {
-      expect(routerStub.delete
-        .withArgs('/:id', 'heartrateCtrl.destroy')
+  describe('GET /api/heartrates/show/interval/statistics/', function() {
+    it('should route to heartrate.controller.showHeartrateStatisticsbByInterval', function() {
+      expect(routerStub.get
+        .withArgs('/show/interval/statistics/', 'authService.isAuthenticated', 'heartrateCtrl.showHeartrateStatisticsbByInterval')
         ).to.have.been.calledOnce;
     });
   });

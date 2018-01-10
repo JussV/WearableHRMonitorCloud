@@ -151,7 +151,7 @@ export function heartRatesByStartDateByEndDateByUniquePhoneId(req, res) {
       return handleError(res, 500);
     } else {
       res.jsonp(resultArr);
-      return respondWithResult(res, 201);
+      return respondWithResult(res, 200);
     }
   });
 }
@@ -242,7 +242,7 @@ export function showHeartrateStatisticsbByInterval(req, res) {
             return handleError(res, 500);
           } else {
             res.jsonp(result);
-            return respondWithResult(res, 201);
+            return respondWithResult(res, 200);
           }
         });
       }
@@ -324,7 +324,7 @@ export function bulkCreate(req, res) {
 export function latestSyncDate(req, res) {
   return models.Heartrate.findOne({ uniquePhoneId: req.query.upid, device: req.query.device }, {}, { sort: {date: -1} })
     .then(handleEntityNotFound(res))
-    .then(respondWithResult(res, 201))
+    .then(respondWithResult(res, 200))
     .catch(handleError(res));
 }
 
