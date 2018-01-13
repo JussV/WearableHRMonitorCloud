@@ -25,4 +25,4 @@ Run `gulp build` for building and `gulp serve` for preview.
 
 ## Testing
 
-Running `npm test` will run the unit tests with karma.
+Run `gulp test:serve` to run unit and integration tests.

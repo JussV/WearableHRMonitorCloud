@@ -36,7 +36,7 @@ describe('Device API:', function() {
         .post('/api/devices')
         .send({
           name: 'New Device',
-          info: 'This is the brand new device!!!'
+          key: 1230256
         })
         .expect(201)
         .expect('Content-Type', /json/)
@@ -51,7 +51,7 @@ describe('Device API:', function() {
 
     it('should respond with the newly created device', function() {
       expect(newDevice.name).to.equal('New Device');
-      expect(newDevice.info).to.equal('This is the brand new device!!!');
+      expect(newDevice.key).to.equal(1230256);
     });
   });
 
@@ -78,7 +78,7 @@ describe('Device API:', function() {
 
     it('should respond with the requested device', function() {
       expect(device.name).to.equal('New Device');
-      expect(device.info).to.equal('This is the brand new device!!!');
+      expect(device.key).to.equal(1230256);
     });
   });
 
@@ -90,7 +90,6 @@ describe('Device API:', function() {
         .put(`/api/devices/${newDevice._id}`)
         .send({
           name: 'Updated Device',
-          info: 'This is the updated device!!!'
         })
         .expect(200)
         .expect('Content-Type', /json/)
@@ -109,7 +108,6 @@ describe('Device API:', function() {
 
     it('should respond with the updated device', function() {
       expect(updatedDevice.name).to.equal('Updated Device');
-      expect(updatedDevice.info).to.equal('This is the updated device!!!');
     });
 
     it('should respond with the updated device on a subsequent GET', function(done) {
@@ -124,41 +122,8 @@ describe('Device API:', function() {
           let device = res.body;
 
           expect(device.name).to.equal('Updated Device');
-          expect(device.info).to.equal('This is the updated device!!!');
-
           done();
         });
-    });
-  });
-
-  describe('PATCH /api/devices/:id', function() {
-    var patchedDevice;
-
-    beforeEach(function(done) {
-      request(app)
-        .patch(`/api/devices/${newDevice._id}`)
-        .send([
-          { op: 'replace', path: '/name', value: 'Patched Device' },
-          { op: 'replace', path: '/info', value: 'This is the patched device!!!' }
-        ])
-        .expect(200)
-        .expect('Content-Type', /json/)
-        .end(function(err, res) {
-          if(err) {
-            return done(err);
-          }
-          patchedDevice = res.body;
-          done();
-        });
-    });
-
-    afterEach(function() {
-      patchedDevice = {};
-    });
-
-    it('should respond with the patched device', function() {
-      expect(patchedDevice.name).to.equal('Patched Device');
-      expect(patchedDevice.info).to.equal('This is the patched device!!!');
     });
   });
 

@@ -8,7 +8,7 @@ import request from 'supertest';
 var newThing;
 
 describe('Thing API:', function() {
-  describe('GET /api/things', function() {
+  /*describe('GET /api/things', function() {
     var things;
 
     beforeEach(function(done) {
@@ -186,5 +186,5 @@ describe('Thing API:', function() {
           done();
         });
     });
-  });
+  });*/
 });
